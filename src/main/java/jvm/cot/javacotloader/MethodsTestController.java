@@ -19,30 +19,28 @@ import java.util.Calendar;
 @RestController
 public class MethodsTestController {
     public static final String BASE_COT_DIR = "src/main/resources/cot-excel";
+    public static final String ZIP_COT_DIR = BASE_COT_DIR + "/zip";
+    public static final String UNZIP_COT_DIR = BASE_COT_DIR + "/unzip";
+    public static final int YEAR = Calendar.getInstance().get(Calendar.YEAR);
     private static final Logger logger = LoggerFactory.getLogger(MethodsTestController.class);
 
     @GetMapping("/test")
     public String testMethod() {
-        logger.info("Test Method called");
-
-        // CREATE FOLDER
-        logger.info("Creating folder: " + BASE_COT_DIR);
-        File dir = new File(BASE_COT_DIR);
-        boolean result = dir.mkdir();
-        logger.info("Folder created: " + result);
-
-        int year = Calendar.getInstance().get(Calendar.YEAR);
-
+        // CREATE FOLDERS
+        createDirectories();
         // DOWNLOAD COT ZIP
-        logger.info("Downloading COT for " + year);
+        logger.info("Downloading COT for " + YEAR);
         try {
-            URL url = getUrl(year);
-            String filePath = getFilePath(year);
+            URL url = getUrl(YEAR);
+            String filePath = getZipFilePath(YEAR);
             logger.info("Downloading from " + url + " to " + filePath);
-            downloadZip(filePath, url);
+
+            // Temporary, don't need to re-download
+//            downloadZip(filePath, url);
+            unzipCot(new File(ZIP_COT_DIR), new File(UNZIP_COT_DIR));
         } catch (Exception e) {
-            logger.error("Error downloading COT for " + year + ": " + e.getMessage());
-            return "Error downloading COT for " + year + ": " + e.getMessage();
+            logger.error("Error downloading COT for " + YEAR + ": " + e.getMessage());
+            return "Error downloading COT for " + YEAR + ": " + e.getMessage();
         }
 
         // EXTRACT ZIP
@@ -50,8 +48,24 @@ public class MethodsTestController {
         return "test";
     }
 
-    private String getFilePath(int year) {
-        return BASE_COT_DIR + "/" + "dea_fut_xls_" + year + ".zip";
+    private String getZipFilePath(int year) {
+        return ZIP_COT_DIR + "/dea_fut_xls_" + year + ".zip";
+    }
+
+    private void createDirectories() {
+        File dir = new File(BASE_COT_DIR);
+        checkCreateDir(dir);
+        File zipDir = new File(ZIP_COT_DIR);
+        checkCreateDir(zipDir);
+        File unzipDir = new File(UNZIP_COT_DIR);
+        checkCreateDir(unzipDir);
+    }
+
+    private void checkCreateDir(File dir) {
+        if (!dir.exists()) {
+            boolean result = dir.mkdir();
+            logger.debug("Created directory " + BASE_COT_DIR + ": " + result);
+        }
     }
 
     private URL getUrl(int year) throws MalformedURLException {
@@ -67,6 +81,37 @@ public class MethodsTestController {
             while ((byteContent = inputStream.read(data, 0, 1024)) != -1) {
                 fileOs.write(data, 0, byteContent);
             }
+        }
+    }
+
+    private void unzipCot(File zipDir, File unzipDir) {
+        // Expect these folder to have been created
+        if (zipDir == null || unzipDir == null || !zipDir.exists() || !unzipDir.exists()) {
+            logger.warn("zipDir or unzipDir is null or does not exist.");
+            return;
+        }
+
+        File[] files = zipDir.listFiles();
+
+        try {
+            if (files == null) {
+                logger.warn("No files found.");
+                return;
+            }
+            for (File file : files) {
+                logger.info("Unzipping " + file.getName());
+                String prefix = file.getName().substring(0, file.getName().lastIndexOf('.'));
+                String unzipPath = unzipDir.getAbsolutePath() + "/" + prefix;
+                // make path for windows or linux
+                if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                    unzipPath = unzipPath.replace("/", "\\");
+                } else {
+                    unzipPath = unzipPath.replace("\\", "/");
+                }
+                logger.info("Unzipping to " + unzipPath);
+            }
+        } catch (Exception e) {
+            logger.error("Error unzipping COT: " + e.getMessage());
         }
     }
 }
