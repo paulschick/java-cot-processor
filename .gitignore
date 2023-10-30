@@ -1,3 +1,4 @@
+src/main/resources/cot-excel
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
