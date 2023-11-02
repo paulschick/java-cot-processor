@@ -2,6 +2,7 @@ package jvm.cot.javacotloader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,13 @@ public class CotDownloadController {
     public static final String UNZIP_COT_DIR = BASE_COT_DIR + "/unzip";
     private static final Logger logger = LoggerFactory.getLogger(CotDownloadController.class);
 
+    private final ExcelService excelService;
+
+    @Autowired
+    public CotDownloadController(ExcelService excelService) {
+        this.excelService = excelService;
+    }
+
     @GetMapping("/download/{startYear}/{endYear}")
     public String downloadCot(@PathVariable String startYear, @PathVariable String endYear) {
         int start = Integer.parseInt(startYear);
@@ -39,6 +47,40 @@ public class CotDownloadController {
             } catch (Exception e) {
                 logger.error("Error downloading COT for " + year + ": " + e.getMessage());
                 return "Error downloading COT for " + year + ": " + e.getMessage();
+            }
+        }
+        return "Success";
+    }
+
+    @GetMapping("/process/test/{rows}")
+    public String processTest(@PathVariable String rows) {
+        int numRows = Integer.parseInt(rows);
+        File unzipDir = new File(UNZIP_COT_DIR);
+        if (!unzipDir.exists()) {
+            return "Unzip directory does not exist.";
+        }
+        File[] unzipChildren = unzipDir.listFiles();
+        if (unzipChildren == null || unzipChildren.length == 0) {
+            return "No files found.";
+        }
+
+        for (File unzipChild : unzipChildren) {
+            logger.info("Processing " + unzipChild.getName());
+            if (unzipChild.isDirectory()) {
+                logger.info("Entering directory " + unzipChild.getName());
+                File[] files = unzipChild.listFiles();
+                if (files == null || files.length == 0) {
+                    logger.info("Skipping directory " + unzipChild.getName() + " because it is empty.");
+                    continue;
+                }
+                for (File file : files) {
+                    logger.info("Processing file " + file.getName());
+                    if (file.getName().endsWith(".xls")) {
+                        logger.info("Process XLS File test for " + file.getName());
+                        logger.info("Reading " + numRows + " rows from " + file.getName());
+                        excelService.readExcelFile(file.getAbsolutePath(), numRows);
+                    }
+                }
             }
         }
         return "Success";
