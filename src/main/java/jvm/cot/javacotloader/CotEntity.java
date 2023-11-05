@@ -63,23 +63,47 @@ public class CotEntity {
         return nonCommLong;
     }
 
+    public void setNonCommLong(String nonCommLong) {
+        this.nonCommLong = nonCommLong;
+    }
+
     public String getNonCommShort() {
         return nonCommShort;
+    }
+
+    public void setNonCommShort(String nonCommShort) {
+        this.nonCommShort = nonCommShort;
     }
 
     public String getCommLong() {
         return commLong;
     }
 
+    public void setCommLong(String commLong) {
+        this.commLong = commLong;
+    }
+
     public String getCommShort() {
         return commShort;
+    }
+
+    public void setCommShort(String commShort) {
+        this.commShort = commShort;
     }
 
     public String getNonReptLong() {
         return nonReptLong;
     }
 
+    public void setNonReptLong(String nonReptLong) {
+        this.nonReptLong = nonReptLong;
+    }
+
     public String getNonReptShort() {
         return nonReptShort;
+    }
+
+    public void setNonReptShort(String nonReptShort) {
+        this.nonReptShort = nonReptShort;
     }
 }
