@@ -1,10 +1,9 @@
-package jvm.cot.javacotloader;
+package jvm.cot.javacotloader.models;
 
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "cot_data")
-public class CotEntity {
+public class Cot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

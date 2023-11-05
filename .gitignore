@@ -1,3 +1,4 @@
+*.db
 src/main/resources/cot-excel
 HELP.md
 target/
