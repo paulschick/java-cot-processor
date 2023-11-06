@@ -1,9 +1,11 @@
 package jvm.cot.javacotloader.controllers;
 
+import jvm.cot.javacotloader.models.MessageResponse;
 import jvm.cot.javacotloader.services.ExcelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +35,7 @@ public class CotDownloadController {
     }
 
     @GetMapping("/download/{startYear}/{endYear}")
-    public String downloadCot(@PathVariable String startYear, @PathVariable String endYear) {
+    public ResponseEntity<MessageResponse> downloadCot(@PathVariable String startYear, @PathVariable String endYear) {
         int start = Integer.parseInt(startYear);
         int end = Integer.parseInt(endYear);
         createDirectories();
@@ -47,21 +49,24 @@ public class CotDownloadController {
                 unzipCot(new File(ZIP_COT_DIR), new File(UNZIP_COT_DIR));
             } catch (Exception e) {
                 logger.error("Error downloading COT for " + year + ": " + e.getMessage());
-                return "Error downloading COT for " + year + ": " + e.getMessage();
+                return ResponseEntity.badRequest().body(new MessageResponse("Error downloading COT for " + year + ": " + e.getMessage()));
             }
         }
-        return "Success";
+        return ResponseEntity.ok(new MessageResponse("Success"));
     }
 
     @GetMapping(value = "/process/all/{fileNo}", produces = "application/json")
-    public String writeAllRowsForFileNumber(@PathVariable int fileNo) {
+    public ResponseEntity<MessageResponse> writeAllRowsForFileNumber(@PathVariable int fileNo) {
         File unzipDir = new File(UNZIP_COT_DIR);
         if (!unzipDir.exists()) {
-            return "{\"error\": \"Unzip directory does not exist.\"}";
+            return ResponseEntity.badRequest().body(new MessageResponse("Unzip directory does not exist."));
         }
         File[] unzipChildren = unzipDir.listFiles();
         if (unzipChildren == null || unzipChildren.length == 0) {
-            return "{\"error\": \"No files found.\"}";
+            return ResponseEntity.badRequest().body(new MessageResponse("No files found."));
+        }
+        if (fileNo < 0 || fileNo >= unzipChildren.length) {
+            return ResponseEntity.badRequest().body(new MessageResponse("File number " + fileNo + " is out of range."));
         }
         File unzipChild = unzipChildren[fileNo];
         logger.info("Processing " + unzipChild.getName());
@@ -70,7 +75,7 @@ public class CotDownloadController {
             File[] files = unzipChild.listFiles();
             if (files == null || files.length == 0) {
                 logger.info("Skipping directory " + unzipChild.getName() + " because it is empty.");
-                return "{\"error\": \"Skipping directory " + unzipChild.getName() + " because it is empty.\"}";
+                return ResponseEntity.badRequest().body(new MessageResponse("Skipping directory " + unzipChild.getName() + " because it is empty."));
             }
             for (File file : files) {
                 logger.info("Processing file " + file.getName());
@@ -80,7 +85,7 @@ public class CotDownloadController {
                 }
             }
         }
-        return "{\"message\": \"success\"}";
+        return ResponseEntity.ok(new MessageResponse("success"));
     }
 
     private String getZipFilePath(int year) {
