@@ -53,39 +53,6 @@ public class CotDownloadController {
         return "Success";
     }
 
-    @GetMapping("/process/test/{rows}")
-    public String processTest(@PathVariable String rows) {
-        int numRows = Integer.parseInt(rows);
-        File unzipDir = new File(UNZIP_COT_DIR);
-        if (!unzipDir.exists()) {
-            return "Unzip directory does not exist.";
-        }
-        File[] unzipChildren = unzipDir.listFiles();
-        if (unzipChildren == null || unzipChildren.length == 0) {
-            return "No files found.";
-        }
-
-        File unzipChild = unzipChildren[0];
-        logger.info("Processing " + unzipChild.getName());
-        if (unzipChild.isDirectory()) {
-            logger.info("Entering directory " + unzipChild.getName());
-            File[] files = unzipChild.listFiles();
-            if (files == null || files.length == 0) {
-                logger.info("Skipping directory " + unzipChild.getName() + " because it is empty.");
-                return "Skipping directory " + unzipChild.getName() + " because it is empty.";
-            }
-            for (File file : files) {
-                logger.info("Processing file " + file.getName());
-                if (file.getName().endsWith(".xls")) {
-                    logger.info("Process XLS File test for " + file.getName());
-                    logger.info("Reading " + numRows + " rows from " + file.getName());
-                    excelService.testWriteFromExcelFile(file.getAbsolutePath(), numRows);
-                }
-            }
-        }
-        return "Success";
-    }
-
     @GetMapping(value = "/process/all/{fileNo}", produces = "application/json")
     public String writeAllRowsForFileNumber(@PathVariable int fileNo) {
         File unzipDir = new File(UNZIP_COT_DIR);

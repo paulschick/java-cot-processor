@@ -28,31 +28,6 @@ public class ExcelService {
         this.cotRepository = cotRepository;
     }
 
-    public void testWriteFromExcelFile(String filePath, int numberRows) {
-        try (FileInputStream fis = new FileInputStream(new File(filePath))) {
-            Workbook workbook = new HSSFWorkbook(fis);
-            Sheet sheet = workbook.getSheetAt(0);
-            int rowIdx = 0;
-            List<Cot> cots = new ArrayList<>();
-            for (Row row : sheet) {
-                if (rowIdx >= numberRows) break;
-                if (rowIdx == 0) {
-                    rowIdx++;
-                    continue;
-                }
-
-                Cot cot = XlsRowToCot.rowToCot(row);
-                cots.add(cot);
-                rowIdx++;
-            }
-            cotRepository.saveAll(cots);
-            logger.info("Saved " + rowIdx + " rows to database.");
-
-        } catch (Exception e) {
-            logger.error("Error reading Excel file: " + e.getMessage());
-        }
-    }
-
     public void writeAllRows(String filePath) {
         try (FileInputStream fis = new FileInputStream(filePath)) {
             Workbook workbook = new HSSFWorkbook(fis);
