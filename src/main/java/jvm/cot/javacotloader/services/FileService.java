@@ -14,7 +14,7 @@ import java.util.zip.ZipInputStream;
 @Service
 public class FileService {
     private static final Logger logger = LoggerFactory.getLogger(FileService.class);
-    private final String baseCotDir = "src/main/resources/cot-excel";
+    private final String baseCotDir = "data/cot-excel";
 
     public String getBaseCotDir() {
         return baseCotDir;
@@ -33,6 +33,8 @@ public class FileService {
     }
 
     public void createDirectories() {
+        File dataDir = new File("data");
+        checkCreateDir(dataDir);
         File dir = new File(baseCotDir);
         checkCreateDir(dir);
         File zipDir = new File(getZipCotDir());
