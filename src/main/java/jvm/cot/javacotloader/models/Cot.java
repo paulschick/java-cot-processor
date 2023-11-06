@@ -2,13 +2,15 @@ package jvm.cot.javacotloader.models;
 
 import jakarta.persistence.*;
 
+import java.util.Date;
+
 @Entity
 public class Cot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "date")
-    private String date;
+    private Date date;
     @Column(name = "market")
     private String market;
     @Column(name = "open_interest")
@@ -42,11 +44,11 @@ public class Cot {
         this.market = market;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 

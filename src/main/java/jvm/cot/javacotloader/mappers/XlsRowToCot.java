@@ -11,7 +11,6 @@ public class XlsRowToCot {
         Cell marketCell = row.getCell(0);
         Cell reportDateCell = row.getCell(2);
         Date reportDate = reportDateCell.getDateCellValue();
-        String reportDateString = reportDate.toString();
 
         Cell openIntCell = row.getCell(7);
         Cell nonCommLongCell = row.getCell(8);
@@ -23,7 +22,7 @@ public class XlsRowToCot {
 
         Cot cot = new Cot();
         cot.setMarket(cellToString(marketCell));
-        cot.setDate(reportDateString);
+        cot.setDate(reportDate);
         cot.setOpenInterest(cellToString(openIntCell));
         cot.setNonCommLong(cellToString(nonCommLongCell));
         cot.setNonCommShort(cellToString(nonCommShortCell));
