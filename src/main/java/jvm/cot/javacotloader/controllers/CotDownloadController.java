@@ -1,7 +1,7 @@
 package jvm.cot.javacotloader.controllers;
 
 import jvm.cot.javacotloader.models.MessageResponse;
-import jvm.cot.javacotloader.services.ExcelService;
+import jvm.cot.javacotloader.services.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,98 +14,40 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * <a href="https://github.com/christine-berlin/COT-Charts/blob/master/src/UpdateExcelFiles.java">UpdateExcelFiles.java</a>
  */
 @RestController
 public class CotDownloadController {
-    public static final String BASE_COT_DIR = "src/main/resources/cot-excel";
-    public static final String ZIP_COT_DIR = BASE_COT_DIR + "/zip";
-    public static final String UNZIP_COT_DIR = BASE_COT_DIR + "/unzip";
     private static final Logger logger = LoggerFactory.getLogger(CotDownloadController.class);
-
-    private final ExcelService excelService;
+    private final FileService fileService;
 
     @Autowired
-    public CotDownloadController(ExcelService excelService) {
-        this.excelService = excelService;
+    public CotDownloadController(FileService fileService) {
+        this.fileService = fileService;
     }
 
     @GetMapping("/download/{startYear}/{endYear}")
     public ResponseEntity<MessageResponse> downloadCot(@PathVariable String startYear, @PathVariable String endYear) {
         int start = Integer.parseInt(startYear);
         int end = Integer.parseInt(endYear);
-        createDirectories();
+        fileService.createDirectories();
         logger.info("Downloading COT for " + startYear + " to " + endYear);
         for (int year = start; year <= end; year++) {
             try {
                 URL url = getUrl(year);
-                String filePath = getZipFilePath(year);
+                String filePath = fileService.getZipFilePath(year);
                 logger.info("Downloading from " + url + " to " + filePath);
                 downloadZip(filePath, url);
-                unzipCot(new File(ZIP_COT_DIR), new File(UNZIP_COT_DIR));
+                // TODO - this will unzip everything, update for bulk download
+                fileService.unzipCots();
             } catch (Exception e) {
                 logger.error("Error downloading COT for " + year + ": " + e.getMessage());
                 return ResponseEntity.badRequest().body(new MessageResponse("Error downloading COT for " + year + ": " + e.getMessage()));
             }
         }
         return ResponseEntity.ok(new MessageResponse("Success"));
-    }
-
-    @GetMapping(value = "/process/all/{fileNo}", produces = "application/json")
-    public ResponseEntity<MessageResponse> writeAllRowsForFileNumber(@PathVariable int fileNo) {
-        File unzipDir = new File(UNZIP_COT_DIR);
-        if (!unzipDir.exists()) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Unzip directory does not exist."));
-        }
-        File[] unzipChildren = unzipDir.listFiles();
-        if (unzipChildren == null || unzipChildren.length == 0) {
-            return ResponseEntity.badRequest().body(new MessageResponse("No files found."));
-        }
-        if (fileNo < 0 || fileNo >= unzipChildren.length) {
-            return ResponseEntity.badRequest().body(new MessageResponse("File number " + fileNo + " is out of range."));
-        }
-        File unzipChild = unzipChildren[fileNo];
-        logger.info("Processing " + unzipChild.getName());
-        if (unzipChild.isDirectory()) {
-            logger.info("Entering directory " + unzipChild.getName());
-            File[] files = unzipChild.listFiles();
-            if (files == null || files.length == 0) {
-                logger.info("Skipping directory " + unzipChild.getName() + " because it is empty.");
-                return ResponseEntity.badRequest().body(new MessageResponse("Skipping directory " + unzipChild.getName() + " because it is empty."));
-            }
-            for (File file : files) {
-                logger.info("Processing file " + file.getName());
-                if (file.getName().endsWith(".xls")) {
-                    logger.info("Process XLS File test for " + file.getName());
-                    excelService.writeAllRows(file.getAbsolutePath());
-                }
-            }
-        }
-        return ResponseEntity.ok(new MessageResponse("success"));
-    }
-
-    private String getZipFilePath(int year) {
-        return ZIP_COT_DIR + "/dea_fut_xls_" + year + ".zip";
-    }
-
-    private void createDirectories() {
-        File dir = new File(BASE_COT_DIR);
-        checkCreateDir(dir);
-        File zipDir = new File(ZIP_COT_DIR);
-        checkCreateDir(zipDir);
-        File unzipDir = new File(UNZIP_COT_DIR);
-        checkCreateDir(unzipDir);
-    }
-
-    private void checkCreateDir(File dir) {
-        if (!dir.exists()) {
-            boolean result = dir.mkdir();
-            logger.debug("Created directory " + BASE_COT_DIR + ": " + result);
-        }
     }
 
     private URL getUrl(int year) throws MalformedURLException {
@@ -128,60 +70,6 @@ public class CotDownloadController {
             while ((byteContent = inputStream.read(data, 0, 1024)) != -1) {
                 fileOs.write(data, 0, byteContent);
             }
-        }
-    }
-
-    private void unzipCot(File zipDir, File unzipDir) {
-        // Expect these folder to have been created
-        if (zipDir == null || unzipDir == null || !zipDir.exists() || !unzipDir.exists()) {
-            logger.warn("zipDir or unzipDir is null or does not exist.");
-            return;
-        }
-
-        File[] files = zipDir.listFiles();
-
-        try {
-            if (files == null) {
-                logger.warn("No files found.");
-                return;
-            }
-            for (File file : files) {
-                logger.info("Unzipping " + file.getName());
-                String prefix = file.getName().substring(0, file.getName().lastIndexOf('.'));
-                String unzipPath = unzipDir.getAbsolutePath() + File.separator + prefix;
-                logger.info("Unzipping to " + unzipPath);
-                unzip(file.getAbsolutePath(), unzipPath, prefix);
-            }
-        } catch (Exception e) {
-            logger.error("Error unzipping COT: " + e.getMessage());
-        }
-    }
-
-    private void unzip(String zipFilePath, String destDirPath, String prefix) {
-        try (FileInputStream fis = new FileInputStream(zipFilePath)) {
-            byte[] buffer = new byte[1024];
-            ZipInputStream zis = new ZipInputStream(fis);
-            ZipEntry zipEntry = zis.getNextEntry();
-
-            while (zipEntry != null) {
-                String fileName = zipEntry.getName();
-                File newFile = new File(destDirPath + File.separator + prefix + ".xls");
-                // Create all non exists folders
-                new File(newFile.getParent()).mkdirs();
-                try (FileOutputStream fos = new FileOutputStream(newFile)) {
-                    int len;
-                    while ((len = zis.read(buffer)) > 0) {
-                        fos.write(buffer, 0, len);
-                    }
-                    zis.closeEntry();
-                    zipEntry = zis.getNextEntry();
-                } catch (Exception e) {
-                    logger.error("Error unzipping " + zipFilePath + ": " + e.getMessage());
-                    return;
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Error unzipping " + zipFilePath + ": " + e.getMessage());
         }
     }
 }
