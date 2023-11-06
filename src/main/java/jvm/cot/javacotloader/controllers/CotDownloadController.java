@@ -65,22 +65,21 @@ public class CotDownloadController {
             return "No files found.";
         }
 
-        for (File unzipChild : unzipChildren) {
-            logger.info("Processing " + unzipChild.getName());
-            if (unzipChild.isDirectory()) {
-                logger.info("Entering directory " + unzipChild.getName());
-                File[] files = unzipChild.listFiles();
-                if (files == null || files.length == 0) {
-                    logger.info("Skipping directory " + unzipChild.getName() + " because it is empty.");
-                    continue;
-                }
-                for (File file : files) {
-                    logger.info("Processing file " + file.getName());
-                    if (file.getName().endsWith(".xls")) {
-                        logger.info("Process XLS File test for " + file.getName());
-                        logger.info("Reading " + numRows + " rows from " + file.getName());
-                        excelService.readExcelFile(file.getAbsolutePath(), numRows);
-                    }
+        File unzipChild = unzipChildren[0];
+        logger.info("Processing " + unzipChild.getName());
+        if (unzipChild.isDirectory()) {
+            logger.info("Entering directory " + unzipChild.getName());
+            File[] files = unzipChild.listFiles();
+            if (files == null || files.length == 0) {
+                logger.info("Skipping directory " + unzipChild.getName() + " because it is empty.");
+                return "Skipping directory " + unzipChild.getName() + " because it is empty.";
+            }
+            for (File file : files) {
+                logger.info("Processing file " + file.getName());
+                if (file.getName().endsWith(".xls")) {
+                    logger.info("Process XLS File test for " + file.getName());
+                    logger.info("Reading " + numRows + " rows from " + file.getName());
+                    excelService.testWriteFromExcelFile(file.getAbsolutePath(), numRows);
                 }
             }
         }
