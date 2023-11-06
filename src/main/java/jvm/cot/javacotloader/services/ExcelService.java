@@ -52,4 +52,28 @@ public class ExcelService {
             logger.error("Error reading Excel file: " + e.getMessage());
         }
     }
+
+    public void writeAllRows(String filePath) {
+        try (FileInputStream fis = new FileInputStream(filePath)) {
+            Workbook workbook = new HSSFWorkbook(fis);
+            Sheet sheet = workbook.getSheetAt(0);
+            int rowIdx = 0;
+            List<Cot> cots = new ArrayList<>();
+            for (Row row : sheet) {
+                if (rowIdx == 0) {
+                    rowIdx++;
+                    continue;
+                }
+
+                Cot cot = XlsRowToCot.rowToCot(row);
+                cots.add(cot);
+                rowIdx++;
+            }
+            cotRepository.saveAll(cots);
+            int rowCount = rowIdx + 1;
+            logger.info("Saved " + rowCount + " rows to database.");
+        } catch (Exception e) {
+            logger.error("Error reading Excel file: " + e.getMessage());
+        }
+    }
 }
