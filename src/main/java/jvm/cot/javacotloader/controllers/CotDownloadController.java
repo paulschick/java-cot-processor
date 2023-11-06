@@ -96,7 +96,7 @@ public class CotDownloadController {
         if (unzipChildren == null || unzipChildren.length == 0) {
             return "{\"error\": \"No files found.\"}";
         }
-        File unzipChild = unzipChildren[0];
+        File unzipChild = unzipChildren[fileNo];
         logger.info("Processing " + unzipChild.getName());
         if (unzipChild.isDirectory()) {
             logger.info("Entering directory " + unzipChild.getName());
