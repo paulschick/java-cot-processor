@@ -14,7 +14,7 @@ import java.util.zip.ZipInputStream;
 @Service
 public class FileService {
     private static final Logger logger = LoggerFactory.getLogger(FileService.class);
-    private final String baseCotDir = "data/cot-excel";
+    private final String baseCotDir = "data";
 
     public String getBaseCotDir() {
         return baseCotDir;
@@ -33,8 +33,6 @@ public class FileService {
     }
 
     public void createDirectories() {
-        File dataDir = new File("data");
-        checkCreateDir(dataDir);
         File dir = new File(baseCotDir);
         checkCreateDir(dir);
         File zipDir = new File(getZipCotDir());
@@ -60,16 +58,14 @@ public class FileService {
             for (File file : files) {
                 logger.info("Unzipping " + file.getName());
                 String prefix = file.getName().substring(0, file.getName().lastIndexOf('.'));
-                String unzipPath = unzipDir.getAbsolutePath() + File.separator + prefix;
-                logger.info("Unzipping to " + unzipPath);
-                unzip(file.getAbsolutePath(), unzipPath, prefix);
+                unzip(file.getAbsolutePath(), prefix);
             }
         } catch (Exception e) {
             logger.error("Error unzipping COT: " + e.getMessage());
         }
     }
 
-    private void unzip(String zipFilePath, String destDirPath, String prefix) {
+    private void unzip(String zipFilePath, String prefix) {
         try (FileInputStream fis = new FileInputStream(zipFilePath)) {
             byte[] buffer = new byte[1024];
             ZipInputStream zis = new ZipInputStream(fis);
@@ -77,9 +73,7 @@ public class FileService {
 
             while (zipEntry != null) {
                 String fileName = zipEntry.getName();
-                File newFile = new File(destDirPath + File.separator + prefix + ".xls");
-                // Create all non exists folders
-                new File(newFile.getParent()).mkdirs();
+                File newFile = new File(getUnzipCotDir() + File.separator + prefix + ".xls");
                 try (FileOutputStream fos = new FileOutputStream(newFile)) {
                     int len;
                     while ((len = zis.read(buffer)) > 0) {

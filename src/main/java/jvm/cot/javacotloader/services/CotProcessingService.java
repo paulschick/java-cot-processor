@@ -30,25 +30,17 @@ public class CotProcessingService {
     }
 
     public void writeFileByIndex(int fileIndex) throws RuntimeException {
-        File unzipChild = getFile(fileIndex);
-        logger.info("Processing " + unzipChild.getName());
-        if (unzipChild.isDirectory()) {
-            logger.info("Entering directory " + unzipChild.getName());
-            File[] files = unzipChild.listFiles();
-            if (files == null || files.length == 0) {
-                logger.info("Skipping directory " + unzipChild.getName() + " because it is empty.");
-                throw new RuntimeException("Skipping directory " + unzipChild.getName() + " because it is empty.");
-            }
-            for (File file : files) {
-                logger.info("Processing file " + file.getName());
-                if (file.getName().endsWith(".xls")) {
-                    logger.info("Process XLS File test for " + file.getName());
-                    writeAllRows(file.getAbsolutePath());
-                }
-            }
-        } else {
-            throw new RuntimeException("File number " + fileIndex + " is not a directory.");
+        File xlsFile = getFile(fileIndex);
+        if (xlsFile.isDirectory()) {
+            logger.error("File number " + fileIndex + " is a directory.");
+            throw new RuntimeException("File number " + fileIndex + " is a directory.");
         }
+        if (!xlsFile.getName().endsWith(".xls")) {
+            logger.error("File number " + fileIndex + " is not an XLS file.");
+            throw new RuntimeException("File number " + fileIndex + " is not an XLS file.");
+        }
+        writeAllRows(xlsFile.getAbsolutePath());
+        logger.info("Saved " + xlsFile.getName() + " to database.");
     }
 
     private File getFile(int fileIndex) {
