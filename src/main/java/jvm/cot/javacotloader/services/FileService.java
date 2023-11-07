@@ -41,7 +41,7 @@ public class FileService {
         checkCreateDir(unzipDir);
     }
 
-    public void unzipCots() {
+    public void unzipCots(boolean delete) {
         File zipDir = new File(getZipCotDir());
         File unzipDir = new File(getUnzipCotDir());
 
@@ -62,6 +62,17 @@ public class FileService {
             }
         } catch (Exception e) {
             logger.error("Error unzipping COT: " + e.getMessage());
+        }
+        if (delete && files != null) {
+            try {
+                if (deleteFiles()) {
+                    logger.info("Deleted zip files.");
+                } else {
+                    logger.warn("Could not delete zip files.");
+                }
+            } catch (Exception e) {
+                logger.error("Error deleting files: " + e.getMessage());
+            }
         }
     }
 
@@ -96,5 +107,19 @@ public class FileService {
             boolean result = dir.mkdir();
             logger.debug("Created directory " + baseCotDir + ": " + result);
         }
+    }
+
+    private boolean deleteFiles() throws RuntimeException {
+        File zipDir = new File(getZipCotDir());
+        File[] files = zipDir.listFiles();
+        if (files == null) {
+            logger.warn("No files found.");
+            return false;
+        }
+        for (File file : files) {
+            boolean result = file.delete();
+            logger.debug("Deleted " + file.getName() + ": " + result);
+        }
+        return zipDir.delete();
     }
 }

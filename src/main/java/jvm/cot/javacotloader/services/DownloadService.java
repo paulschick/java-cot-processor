@@ -30,7 +30,7 @@ public class DownloadService {
             logger.info("Downloading from " + url + " to " + filePath);
             downloadZip(filePath, url);
         }
-        fileService.unzipCots();
+        fileService.unzipCots(true);
     }
 
     private URL getUrl(int year) throws MalformedURLException {
