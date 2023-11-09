@@ -1,6 +1,7 @@
 package jvm.cot.javacotloader.services;
 
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,21 +13,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 @Service
+@Getter
 public class FileService {
     private static final Logger logger = LoggerFactory.getLogger(FileService.class);
     private final String baseCotDir = "data";
-
-    public String getBaseCotDir() {
-        return baseCotDir;
-    }
-
-    public String getZipCotDir() {
-        return baseCotDir + "/zip";
-    }
-
-    public String getUnzipCotDir() {
-        return baseCotDir + "/unzip";
-    }
+    private final String zipCotDir = baseCotDir + "/zip";
+    private final String unzipCotDir = baseCotDir + "/unzip";
 
     public String getZipFilePath(int year) {
         return getZipCotDir() + "/dea_fut_xls_" + year + ".zip";
