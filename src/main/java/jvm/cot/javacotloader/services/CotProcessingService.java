@@ -1,7 +1,7 @@
 package jvm.cot.javacotloader.services;
 
-import jvm.cot.javacotloader.mappers.XlsRowToCot;
 import jvm.cot.javacotloader.models.Cot;
+import jvm.cot.javacotloader.models.XlsRow;
 import jvm.cot.javacotloader.repositories.CotRepository;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
@@ -70,8 +70,15 @@ public class CotProcessingService {
                     continue;
                 }
 
-                Cot cot = XlsRowToCot.rowToCot(row);
-                cots.add(cot);
+                try {
+                    XlsRow xlsRow = new XlsRow(row);
+                    Cot cot = xlsRow.build();
+                    cots.add(cot);
+                } catch (Exception e) {
+                    logger.error("Error parsing row: {}", row, e);
+                    logger.warn("Skipping row " + rowIdx + " due to error.");
+                }
+
                 rowIdx++;
             }
             cotRepository.saveAll(cots);
