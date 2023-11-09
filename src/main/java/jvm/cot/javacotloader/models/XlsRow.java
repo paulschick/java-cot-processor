@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Calendar;
 import java.util.Date;
 
 @Getter
@@ -42,8 +43,11 @@ public class XlsRow {
 
     public Cot build() {
         Cot cot = new Cot();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(reportDate);
         cot.setMarket(market);
         cot.setDate(reportDate);
+        cot.setYear(calendar.get(Calendar.YEAR));
         cot.setOpenInterest(openInterest);
         cot.setNonCommLong(nonCommLong);
         cot.setNonCommShort(nonCommShort);

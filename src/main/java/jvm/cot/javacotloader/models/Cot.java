@@ -15,6 +15,8 @@ public class Cot {
     private Long id;
     @Column(name = "date")
     private Date date;
+    @Column(name = "year")
+    private int year;
     @Column(name = "market")
     private String market;
     @Column(name = "open_interest")

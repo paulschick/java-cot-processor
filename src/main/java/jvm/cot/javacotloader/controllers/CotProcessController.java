@@ -40,4 +40,12 @@ public class CotProcessController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @GetMapping(value = "/update/{year}", produces = "application/json")
+    public ResponseEntity<Map<String, Object>> updateForYear(@PathVariable int year) {
+        Map<String, Object> response = new HashMap<>();
+        int result = cotProcessingService.updateForFileYear(year);
+        response.put("count", result);
+        return ResponseEntity.ok(response);
+    }
 }

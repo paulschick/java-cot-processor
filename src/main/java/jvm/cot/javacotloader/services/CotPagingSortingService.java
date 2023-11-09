@@ -1,7 +1,7 @@
 package jvm.cot.javacotloader.services;
 
 import jvm.cot.javacotloader.models.Cot;
-import jvm.cot.javacotloader.repositories.CotPagingRepository;
+import jvm.cot.javacotloader.repositories.CotRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,10 +15,10 @@ import java.util.List;
 
 @Service
 public class CotPagingSortingService {
-    private final CotPagingRepository cotPagingRepository;
+    private final CotRepository cotPagingRepository;
 
     @Autowired
-    public CotPagingSortingService(CotPagingRepository cotPagingRepository) {
+    public CotPagingSortingService(CotRepository cotPagingRepository) {
         this.cotPagingRepository = cotPagingRepository;
     }
 

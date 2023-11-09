@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CotProcessingService {
@@ -88,5 +88,11 @@ public class CotProcessingService {
         } catch (Exception e) {
             logger.error("Error reading Excel file: " + e.getMessage());
         }
+    }
+
+    // TEMP returns length of results
+    public int updateForFileYear(int year) {
+        Collection<Cot> cots = cotRepository.retrieveByYear(year);
+        return cots.size();
     }
 }
