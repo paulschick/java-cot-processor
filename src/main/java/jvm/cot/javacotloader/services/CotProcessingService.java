@@ -29,7 +29,7 @@ public class CotProcessingService {
         this.cotRepository = cotRepository;
     }
 
-    public void writeFileByIndex(int fileIndex) throws RuntimeException {
+    public String writeFileByIndex(int fileIndex) throws RuntimeException {
         File xlsFile = getFile(fileIndex);
         if (xlsFile.isDirectory()) {
             logger.error("File number " + fileIndex + " is a directory.");
@@ -41,6 +41,7 @@ public class CotProcessingService {
         }
         writeAllRows(xlsFile.getAbsolutePath());
         logger.info("Saved " + xlsFile.getName() + " to database.");
+        return xlsFile.getName();
     }
 
     private File getFile(int fileIndex) {

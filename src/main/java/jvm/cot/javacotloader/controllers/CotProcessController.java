@@ -1,6 +1,5 @@
 package jvm.cot.javacotloader.controllers;
 
-import jvm.cot.javacotloader.models.MessageResponse;
 import jvm.cot.javacotloader.services.CotProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("process")
@@ -23,14 +25,19 @@ public class CotProcessController {
     }
 
     @GetMapping(value = "/{fileNo}", produces = "application/json")
-    public ResponseEntity<MessageResponse> writeAllRowsForFileNumber(@PathVariable int fileNo) {
+    public ResponseEntity<Map<String, Object>> writeAllRowsForFileNumber(@PathVariable int fileNo) {
+        Map<String, Object> response = new HashMap<>();
         try {
-            cotProcessingService.writeFileByIndex(fileNo);
-            logger.info("Successfully processed file number " + fileNo);
-            return ResponseEntity.ok(new MessageResponse("success"));
+            String fileName = cotProcessingService.writeFileByIndex(fileNo);
+            String message = "Successfully processed file number " + fileNo + ": " + fileName;
+            logger.info(message);
+            response.put("message", message);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("Error processing file number " + fileNo + ": " + e.getMessage());
-            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+            String message = "Error processing file number " + fileNo + ": " + e.getMessage();
+            logger.error(message);
+            response.put("message", message);
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }
