@@ -28,7 +28,7 @@ public class CotPagingController {
     public ResponseEntity<Map<String, Object>> getByPageSort(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "3") int size,
-            @RequestParam(defaultValue = "id,desc") String[] sort
+            @RequestParam(defaultValue = "date,desc;id") String sort
     ) {
         try {
             Map<String, Object> response = new HashMap<>();

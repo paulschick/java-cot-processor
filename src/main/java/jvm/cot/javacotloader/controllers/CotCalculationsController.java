@@ -31,12 +31,11 @@ public class CotCalculationsController {
     public ResponseEntity<Map<String, Object>> getWithNetValues(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "date,desc") List<String> sort
+            @RequestParam(defaultValue = "date,desc;id") String sort
     ) {
         try {
             Map<String, Object> response = new HashMap<>();
-            String[] sortArray = sort.toArray(new String[0]);
-            Page<Cot> cotPage = service.getByPageSorted(page, size, sortArray);
+            Page<Cot> cotPage = service.getByPageSorted(page, size, sort);
             List<Map<String, Object>> responseMap = cotPage.getContent().stream().map(cot -> {
                 int commLongInt = stringToInt(cot.getCommLong());
                 int commShortInt = stringToInt(cot.getCommShort());
