@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 @Entity
 @Getter @Setter @NoArgsConstructor
@@ -35,20 +33,4 @@ public class Cot {
     private String nonReptLong;
     @Column(name = "non_rept_short")
     private String nonReptShort;
-
-    public Map<String, Object> toMap() {
-        Map<String, Object> responseMap = new HashMap<>();
-        responseMap.put("id", id);
-        responseMap.put("date", date);
-        responseMap.put("year", year);
-        responseMap.put("market", market);
-        responseMap.put("openInterest", openInterest);
-        responseMap.put("nonCommLong", nonCommLong);
-        responseMap.put("nonCommShort", nonCommShort);
-        responseMap.put("commLong", commLong);
-        responseMap.put("commShort", commShort);
-        responseMap.put("nonReptLong", nonReptLong);
-        responseMap.put("nonReptShort", nonReptShort);
-        return responseMap;
-    }
 }
