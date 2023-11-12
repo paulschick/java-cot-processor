@@ -1,6 +1,7 @@
 package jvm.cot.javacotloader.services;
 
 import jvm.cot.javacotloader.models.Cot;
+import jvm.cot.javacotloader.models.SimpleMovingAverage;
 import jvm.cot.javacotloader.repositories.CotRepository;
 import jvm.cot.javacotloader.repositories.SmaRepository;
 import org.slf4j.Logger;
@@ -23,14 +24,31 @@ public class SmaService {
         this.cotRepository = cotRepository;
     }
 
-    public void testInserts() {
-        String market = "E-MINI S&P 500 - CHICAGO MERCANTILE EXCHANGE";
-        Collection<Cot> cotsCollection = cotRepository.retrieveByMarket(market);
-        List<Cot> cots = new java.util.ArrayList<>(cotsCollection.stream().toList());
-        logger.info("Retrieved " + cots.size() + " records for market " + market);
-        cots.sort(Comparator.comparing(Cot::getId));
-        logger.info("First ID: " + cots.get(0).getId());
-        logger.info("Last ID: " + cots.get(cots.size() - 1).getId());
+    public void insertSmaForPeriodMarket(int period, String market) {
+        try {
+            Collection<Cot> cotsCollection = cotRepository.retrieveByMarket(market);
+            List<Cot> cots = new java.util.ArrayList<>(cotsCollection.stream().toList());
+            logger.info("Retrieved " + cots.size() + " records for market " + market);
+            cots.sort(Comparator.comparing(Cot::getDate));
+            List<Map<String, Object>> smaCots = calculateMovingAverage(cots, Cot::getOpenInterest, period);
+            List<SimpleMovingAverage> smas = smaCots.stream().map(map -> {
+                Object cotMap = map.get("cot");
+                SimpleMovingAverage sma = new SimpleMovingAverage();
+                sma.setCotId(((Cot) cotMap).getId());
+                for (String key : map.keySet()) {
+                    if (key.startsWith("sma")) {
+                        sma.setValue(String.valueOf(map.get(key)));
+                        sma.setPeriod(Integer.parseInt(key.substring(3)));
+                    }
+                }
+                return sma;
+            }).toList();
+            logger.info("Writing " + smas.size() + " records for market " + market);
+            smaRepository.saveAll(smas);
+        } catch (Exception e) {
+            logger.error("Error while processing market " + market, e);
+            throw e;
+        }
     }
 
     public List<Map<String, Object>> calculateMovingAverage(Collection<Cot> cots, Function<Cot, String> valueGetter, int period) {
