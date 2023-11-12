@@ -7,6 +7,8 @@ import jvm.cot.javacotloader.repositories.SmaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -17,19 +19,28 @@ public class SmaService {
     private static final Logger logger = LoggerFactory.getLogger(SmaService.class);
     private final SmaRepository smaRepository;
     private final CotRepository cotRepository;
+    private final CotPagingSortingService cotPagingSortingService;
 
     @Autowired
-    public SmaService(SmaRepository smaRepository, CotRepository cotRepository) {
+    public SmaService(SmaRepository smaRepository, CotRepository cotRepository, CotPagingSortingService cotPagingSortingService) {
         this.smaRepository = smaRepository;
         this.cotRepository = cotRepository;
+        this.cotPagingSortingService = cotPagingSortingService;
     }
 
-    public List<Map<String, Object>> getCotsWithSma(int period, String market) {
+    public Map<String, Object> getCotsWithSma(int period, String market, int page, int size, String sort) {
         String smaKey = "sma" + period;
-        Collection<Cot> cotsCollection = cotRepository.retrieveByMarket(market);
-        List<Cot> cots = new ArrayList<>(cotsCollection.stream().toList());
-        List<Map<String, Object>> response = new ArrayList<>();
+        Map<String, Object> responseMap = new HashMap<>();
+        Pageable pagingSort = cotPagingSortingService.getPageRequest(page, size, sort);
+        Page<Cot> cotsCollection = cotRepository.retrieveByMarketPageable(market, pagingSort);
+        List<Cot> cots = cotsCollection.getContent();
+        int totalPages = cotsCollection.getTotalPages();
+        int totalItems = cotsCollection.getNumberOfElements();
         logger.info("Retrieved " + cots.size() + " records for market " + market);
+        responseMap.put("currentPage", page);
+        responseMap.put("totalItems", totalItems);
+        responseMap.put("totalPages", totalPages);
+        List<Map<String, Object>> smaMapList = new ArrayList<>();
         for (Cot cot : cots) {
             Map<String, Object> cotMap = new HashMap<>();
             SimpleMovingAverage sma = smaRepository.findByCotIdAndPeriod(cot.getId(), period);
@@ -39,9 +50,10 @@ public class SmaService {
             } else {
                 cotMap.put(smaKey, 0);
             }
-            response.add(cotMap);
+            smaMapList.add(cotMap);
         }
-        return response;
+        responseMap.put("cots", smaMapList);
+        return responseMap;
     }
 
     public void insertSmaForPeriodMarket(int period, String market) {

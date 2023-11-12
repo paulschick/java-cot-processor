@@ -30,6 +30,10 @@ public class CotPagingSortingService {
         return cotPagingRepository.findAll(pagingSort);
     }
 
+    public Pageable getPageRequest(int page, int size, String sort) {
+        return PageRequest.of(page, size, Sort.by(parseSortArray(sort)));
+    }
+
     private List<Order> parseSortArray(String sort) {
         List<Order> orders = new ArrayList<>();
         if (sort == null || sort.isEmpty()) {
