@@ -1,7 +1,6 @@
 package jvm.cot.javacotloader.services;
 
-import jvm.cot.javacotloader.models.Cot;
-import jvm.cot.javacotloader.models.SimpleMovingAverage;
+import jvm.cot.javacotloader.models.*;
 import jvm.cot.javacotloader.repositories.CotRepository;
 import jvm.cot.javacotloader.repositories.SmaRepository;
 import org.slf4j.Logger;
@@ -28,32 +27,21 @@ public class SmaService {
         this.cotPagingSortingService = cotPagingSortingService;
     }
 
-    public Map<String, Object> getCotsWithSma(int period, String market, int page, int size, String sort) {
+    public CotPaginatedResponse getCotResponseWithSma(int period, String market, int page, int size, String sort) {
         String smaKey = "sma" + period;
-        Map<String, Object> responseMap = new HashMap<>();
         Pageable pagingSort = cotPagingSortingService.getPageRequest(page, size, sort);
-        Page<Cot> cotsCollection = cotRepository.retrieveByMarketPageable(market, pagingSort);
-        List<Cot> cots = cotsCollection.getContent();
-        int totalPages = cotsCollection.getTotalPages();
-        int totalItems = cotsCollection.getNumberOfElements();
-        logger.info("Retrieved " + cots.size() + " records for market " + market);
-        responseMap.put("currentPage", page);
-        responseMap.put("totalItems", totalItems);
-        responseMap.put("totalPages", totalPages);
-        List<Map<String, Object>> smaMapList = new ArrayList<>();
-        for (Cot cot : cots) {
-            Map<String, Object> cotMap = new HashMap<>();
+        Page<Cot> cotPage = cotRepository.retrieveByMarketPageable(market, pagingSort);
+        CotBuilder cotBuilder = new CotBuilder(cotPage).withNetValues(true);
+        CotPaginatedResponse cotResponse = cotBuilder.build();
+        for (CotResponse cot : cotResponse.getCots()) {
             SimpleMovingAverage sma = smaRepository.findByCotIdAndPeriod(cot.getId(), period);
-            cotMap.put("cot", cot);
             if (sma != null) {
-                cotMap.put(smaKey, sma.getValue());
+                cot.getCalculatedFields().put(smaKey, sma.getValue());
             } else {
-                cotMap.put(smaKey, 0);
+                cot.getCalculatedFields().put(smaKey, 0);
             }
-            smaMapList.add(cotMap);
         }
-        responseMap.put("cots", smaMapList);
-        return responseMap;
+        return cotResponse;
     }
 
     public void insertSmaForPeriodMarket(int period, String market) {

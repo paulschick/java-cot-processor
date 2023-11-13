@@ -91,8 +91,8 @@ public class CotCalculationsController {
             return ResponseEntity.badRequest().body(responseMap);
         }
         try {
-            Map<String, Object> cots = smaService.getCotsWithSma(period, market, page, size, sort);
-            return ResponseEntity.ok(cots);
+            CotPaginatedResponse cotResponse = smaService.getCotResponseWithSma(period, market, page, size, sort);
+            return ResponseEntity.ok(cotResponse.toMap());
         } catch (Exception e) {
             logger.error("Error occurred: " + e.getMessage() + "\n" + e);
             Map<String, Object> responseMap = new HashMap<>();
