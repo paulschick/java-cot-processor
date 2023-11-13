@@ -52,10 +52,10 @@ public class CotCalculationsController {
 
     @PostMapping(value = "/sma-calculate", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Map<String, Object>> insertSmas(
-            @RequestBody InsertSmaRequest insertSmaRequest
+            @RequestBody InsertSmaRequestBody insertSmaRequest
             ) {
-        String market = insertSmaRequest.market();
-        Integer period = insertSmaRequest.period();
+        String market = insertSmaRequest.getMarket();
+        Integer period = insertSmaRequest.getPeriod();
         if (market == null || market.isBlank() || period == null || period <= 0) {
             logger.error("Invalid request: " + insertSmaRequest);
             Map<String, Object> responseMap = new HashMap<>();

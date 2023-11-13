@@ -31,7 +31,7 @@ public class CotBuilder {
 
     private void setPageValues() {
         this.cotPaginatedResponse.setCurrentPage(this.cotPage.getNumber());
-        this.cotPaginatedResponse.setTotalItems(this.cotPage.getNumberOfElements());
+        this.cotPaginatedResponse.setTotalItems(this.cotPage.getTotalElements());
         this.cotPaginatedResponse.setTotalPages(this.cotPage.getTotalPages());
     }
 
