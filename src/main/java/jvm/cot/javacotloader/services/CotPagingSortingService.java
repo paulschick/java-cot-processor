@@ -1,5 +1,6 @@
 package jvm.cot.javacotloader.services;
 
+import jvm.cot.javacotloader.mappers.PaginationMapper;
 import jvm.cot.javacotloader.models.entities.Cot;
 import jvm.cot.javacotloader.repositories.CotRepository;
 import org.slf4j.Logger;
@@ -26,34 +27,7 @@ public class CotPagingSortingService {
     }
 
     public Page<Cot> getByPageSorted(int page, int size, String sort) {
-        Pageable pagingSort = PageRequest.of(page, size, Sort.by(parseSortArray(sort)));
+        Pageable pagingSort = PaginationMapper.getPageRequest(page, size, sort);
         return cotPagingRepository.findAll(pagingSort);
-    }
-
-    public Pageable getPageRequest(int page, int size, String sort) {
-        return PageRequest.of(page, size, Sort.by(parseSortArray(sort)));
-    }
-
-    private List<Order> parseSortArray(String sort) {
-        List<Order> orders = new ArrayList<>();
-        if (sort == null || sort.isEmpty()) {
-            return orders;
-        }
-        logger.info("sort: " + sort);
-        String[] pairs = sort.split(";");
-        for (String pair : pairs) {
-            String[] elements = pair.split(",");
-            String property = elements[0];
-            String direction = elements.length > 1 ? elements[1] : "asc";
-            orders.add(new Order(getSortDirection(direction), property));
-        }
-        return orders;
-    }
-
-    private Sort.Direction getSortDirection(String direction) {
-        if (direction.equals("asc")) {
-            return Sort.Direction.ASC;
-        }
-        return Sort.Direction.DESC;
     }
 }

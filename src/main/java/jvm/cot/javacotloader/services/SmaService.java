@@ -1,5 +1,6 @@
 package jvm.cot.javacotloader.services;
 
+import jvm.cot.javacotloader.mappers.PaginationMapper;
 import jvm.cot.javacotloader.models.*;
 import jvm.cot.javacotloader.models.entities.Cot;
 import jvm.cot.javacotloader.models.entities.SimpleMovingAverage;
@@ -20,18 +21,16 @@ public class SmaService {
     private static final Logger logger = LoggerFactory.getLogger(SmaService.class);
     private final SmaRepository smaRepository;
     private final CotRepository cotRepository;
-    private final CotPagingSortingService cotPagingSortingService;
 
     @Autowired
-    public SmaService(SmaRepository smaRepository, CotRepository cotRepository, CotPagingSortingService cotPagingSortingService) {
+    public SmaService(SmaRepository smaRepository, CotRepository cotRepository) {
         this.smaRepository = smaRepository;
         this.cotRepository = cotRepository;
-        this.cotPagingSortingService = cotPagingSortingService;
     }
 
     public CotPaginatedResponse getCotResponseWithAllSmas(String market, int page, int size, String sort) {
         String baseSmaKey = "sma";
-        Pageable pagingSort = cotPagingSortingService.getPageRequest(page, size, sort);
+        Pageable pagingSort = PaginationMapper.getPageRequest(page, size, sort);
         Page<Cot> cotPage = cotRepository.retrieveByMarketPageable(market, pagingSort);
         CotBuilder cotBuilder = new CotBuilder(cotPage).withNetValues(true);
         CotPaginatedResponse cotResponse = cotBuilder.build();
@@ -46,7 +45,7 @@ public class SmaService {
 
     public CotPaginatedResponse getCotResponseWithSma(int period, String market, int page, int size, String sort) {
         String smaKey = "sma" + period;
-        Pageable pagingSort = cotPagingSortingService.getPageRequest(page, size, sort);
+        Pageable pagingSort = PaginationMapper.getPageRequest(page, size, sort);
         Page<Cot> cotPage = cotRepository.retrieveByMarketPageable(market, pagingSort);
         CotBuilder cotBuilder = new CotBuilder(cotPage).withNetValues(true);
         CotPaginatedResponse cotResponse = cotBuilder.build();
