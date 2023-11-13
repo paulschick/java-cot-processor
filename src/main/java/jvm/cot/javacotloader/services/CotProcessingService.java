@@ -2,9 +2,7 @@ package jvm.cot.javacotloader.services;
 
 import jvm.cot.javacotloader.models.entities.Cot;
 import jvm.cot.javacotloader.models.XlsRow;
-import jvm.cot.javacotloader.models.entities.Market;
 import jvm.cot.javacotloader.repositories.CotRepository;
-import jvm.cot.javacotloader.repositories.MarketRepository;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -23,13 +21,11 @@ public class CotProcessingService {
     private static final Logger logger = LoggerFactory.getLogger(CotProcessingService.class);
     private final FileService fileService;
     private final CotRepository cotRepository;
-    private final MarketRepository marketRepository;
 
     @Autowired
-    public CotProcessingService(FileService fileService, CotRepository cotRepository, MarketRepository marketRepository) {
+    public CotProcessingService(FileService fileService, CotRepository cotRepository) {
         this.fileService = fileService;
         this.cotRepository = cotRepository;
-        this.marketRepository = marketRepository;
     }
 
     public String writeFileByIndex(int fileIndex) throws RuntimeException {
@@ -68,7 +64,6 @@ public class CotProcessingService {
             Sheet sheet = workbook.getSheetAt(0);
             int rowIdx = 0;
             List<Cot> cots = new ArrayList<>();
-            Set<Market> markets = new HashSet<>();
             for (Row row : sheet) {
                 if (rowIdx == 0) {
                     rowIdx++;
@@ -79,8 +74,6 @@ public class CotProcessingService {
                     XlsRow xlsRow = new XlsRow(row);
                     Cot cot = xlsRow.build();
                     cots.add(cot);
-                    Optional<Market> marketOptional = buildMarketIfNotExists(cot);
-                    marketOptional.ifPresent(markets::add);
                 } catch (Exception e) {
                     logger.error("Error parsing row: {}", row, e);
                     logger.warn("Skipping row " + rowIdx + " due to error.");
@@ -89,7 +82,6 @@ public class CotProcessingService {
                 rowIdx++;
             }
             cotRepository.saveAll(cots);
-            marketRepository.saveAll(markets);
             int rowCount = rowIdx + 1;
             logger.info("Saved " + rowCount + " rows to database.");
         } catch (Exception e) {
@@ -101,16 +93,5 @@ public class CotProcessingService {
     public int updateForFileYear(int year) {
         Collection<Cot> cots = cotRepository.retrieveByYear(year);
         return cots.size();
-    }
-
-    private Optional<Market> buildMarketIfNotExists(Cot cot) {
-        String marketValue = cot.getMarket();
-        Market marketNullable = marketRepository.findByMarket(marketValue);
-        if (marketNullable != null) {
-            return Optional.empty();
-        }
-        Market market = new Market();
-        market.setMarket(marketValue);
-        return Optional.of(market);
     }
 }

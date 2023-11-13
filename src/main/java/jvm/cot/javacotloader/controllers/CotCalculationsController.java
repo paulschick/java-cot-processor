@@ -136,6 +136,7 @@ public class CotCalculationsController {
         return Optional.empty();
     }
 
+    // TODO - extract
     private ResponseEntity<Map<String, Object>> unknownErrorResponse(Exception e) {
         String message = "Unexpected error occurred: " + e.getMessage() + "\n" + e;
         logger.error(message);
@@ -144,6 +145,7 @@ public class CotCalculationsController {
         return ResponseEntity.badRequest().body(responseMap);
     }
 
+    // TODO - extract
     private PaginationRequest cleanPaginationRequest(PaginationRequest req) {
         if (req == null) return new PaginationRequest();
         if (req.getPage() == null) req.setPage(0);

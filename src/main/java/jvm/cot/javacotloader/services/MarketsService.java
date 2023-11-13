@@ -3,7 +3,9 @@ package jvm.cot.javacotloader.services;
 import jvm.cot.javacotloader.mappers.PaginationMapper;
 import jvm.cot.javacotloader.models.MarketResponse;
 import jvm.cot.javacotloader.models.MarketsPaginatedResponse;
+import jvm.cot.javacotloader.models.entities.Cot;
 import jvm.cot.javacotloader.models.entities.Market;
+import jvm.cot.javacotloader.repositories.CotRepository;
 import jvm.cot.javacotloader.repositories.MarketRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,14 +16,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class MarketsService {
     private static final Logger logger = LoggerFactory.getLogger(MarketsService.class);
     private final MarketRepository marketRepository;
+    private final CotRepository cotRepository;
     @Autowired
-    public MarketsService(MarketRepository marketRepository) {
+    public MarketsService(MarketRepository marketRepository, CotRepository cotRepository) {
         this.marketRepository = marketRepository;
+        this.cotRepository = cotRepository;
     }
     public MarketsPaginatedResponse getMarketsResponse(int page, int size, String sort) {
         try {
@@ -44,6 +50,24 @@ public class MarketsService {
             return response;
         } catch (Exception e) {
             logger.error("Error retrieving markets from the database for page " + page + ": " + e);
+            throw e;
+        }
+    }
+
+    public List<Market> insertAllMarkets() {
+        try {
+            List<Cot> cots = cotRepository.findAll();
+            Set<String> marketValues = cots.stream().map(Cot::getMarket).collect(Collectors.toSet());
+            List<Market> markets = new ArrayList<>();
+            for (String marketValue : marketValues) {
+                Market market = new Market();
+                market.setMarket(marketValue);
+                markets.add(market);
+            }
+            logger.info("Saving " + markets.size() + " markets into the database.");
+            return marketRepository.saveAll(markets);
+        } catch (Exception e) {
+            logger.error("Error inserting markets into the database: " + e);
             throw e;
         }
     }
