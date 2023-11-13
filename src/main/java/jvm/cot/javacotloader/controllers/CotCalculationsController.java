@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("calculations")
@@ -42,26 +43,18 @@ public class CotCalculationsController {
             logger.info("Retrieved " + cotResponse.getCots().size() + " records");
             return ResponseEntity.ok(cotResponse.toMap());
         } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            String msg = "Error occurred: " + e.getMessage() + "\n" + e;
-            logger.error(msg);
-            errorResponse.put("message", msg);
-            return ResponseEntity.badRequest().body(errorResponse);
+            return unknownErrorResponse(e);
         }
     }
 
     @PostMapping(value = "/sma-calculate", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Map<String, Object>> insertSmas(
             @RequestBody InsertSmaRequestBody insertSmaRequest
-            ) {
+    ) {
         String market = insertSmaRequest.getMarket();
         Integer period = insertSmaRequest.getPeriod();
-        if (market == null || market.isBlank() || period == null || period <= 0) {
-            logger.error("Invalid request: " + insertSmaRequest);
-            Map<String, Object> responseMap = new HashMap<>();
-            responseMap.put("message", "Invalid request: " + insertSmaRequest);
-            return ResponseEntity.badRequest().body(responseMap);
-        }
+        Optional<ResponseEntity<Map<String, Object>>> invalidMap = tryValidMarketPeriod(market, period, "Invalid request: " + insertSmaRequest);
+        if (invalidMap.isPresent()) return invalidMap.get();
         Map<String, Object> response = new HashMap<>();
         try {
             smaService.insertSmaForPeriodMarket(period, market);
@@ -69,35 +62,26 @@ public class CotCalculationsController {
             logger.info("Successfully inserted SMA for period " + period + " and market " + market);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("Error occurred: " + e.getMessage() + "\n" + e);
-            response.put("message", "Error occurred: " + e.getMessage() + "\n" + e);
-            return ResponseEntity.badRequest().body(response);
+            return unknownErrorResponse(e);
         }
     }
 
     @PostMapping(value = "/sma", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Map<String, Object>> getCotsWithSma(
             @RequestBody SmaRequestBody smaRequest
-            ) {
+    ) {
         String market = smaRequest.getMarket();
         Integer period = smaRequest.getPeriod();
         String sort = smaRequest.getSort();
         Integer page = smaRequest.getPage();
         Integer size = smaRequest.getSize();
-        if (market == null || market.isBlank() || period == null || period <= 0) {
-            logger.error("Invalid request: " + smaRequest);
-            Map<String, Object> responseMap = new HashMap<>();
-            responseMap.put("message", "Invalid request: " + smaRequest);
-            return ResponseEntity.badRequest().body(responseMap);
-        }
+        Optional<ResponseEntity<Map<String, Object>>> invalidMap = tryValidMarketPeriod(market, period, "Invalid request: " + smaRequest);
+        if (invalidMap.isPresent()) return invalidMap.get();
         try {
             CotPaginatedResponse cotResponse = smaService.getCotResponseWithSma(period, market, page, size, sort);
             return ResponseEntity.ok(cotResponse.toMap());
         } catch (Exception e) {
-            logger.error("Error occurred: " + e.getMessage() + "\n" + e);
-            Map<String, Object> responseMap = new HashMap<>();
-            responseMap.put("message", "Error occurred: " + e.getMessage() + "\n" + e);
-            return ResponseEntity.badRequest().body(responseMap);
+            return unknownErrorResponse(e);
         }
     }
 
@@ -109,20 +93,41 @@ public class CotCalculationsController {
         String sort = smaRequest.getSort();
         Integer page = smaRequest.getPage();
         Integer size = smaRequest.getSize();
-        if (market == null || market.isBlank()) {
-            logger.error("Invalid request: " + smaRequest);
-            Map<String, Object> responseMap = new HashMap<>();
-            responseMap.put("message", "Invalid request: " + smaRequest);
-            return ResponseEntity.badRequest().body(responseMap);
-        }
+        Optional<ResponseEntity<Map<String, Object>>> invalidMap = tryValidMarket(market, "Invalid request: " + smaRequest);
+        if (invalidMap.isPresent()) return invalidMap.get();
         try {
             CotPaginatedResponse cotResponse = smaService.getCotResponseWithAllSmas(market, page, size, sort);
             return ResponseEntity.ok(cotResponse.toMap());
         } catch (Exception e) {
-            logger.error("Error occurred: " + e.getMessage() + "\n" + e);
-            Map<String, Object> responseMap = new HashMap<>();
-            responseMap.put("message", "Error occurred: " + e.getMessage() + "\n" + e);
-            return ResponseEntity.badRequest().body(responseMap);
+            return unknownErrorResponse(e);
         }
+    }
+
+    private Optional<ResponseEntity<Map<String, Object>>> tryValidMarketPeriod(String market, Integer period, String s) {
+        if (market == null || market.isBlank() || period == null || period <= 0) {
+            logger.error(s);
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("message", s);
+            return Optional.of(ResponseEntity.badRequest().body(responseMap));
+        }
+        return Optional.empty();
+    }
+
+    private Optional<ResponseEntity<Map<String, Object>>> tryValidMarket(String market, String badRequestMessage) {
+        if (market == null || market.isBlank()) {
+            logger.error(badRequestMessage);
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("message", badRequestMessage);
+            return Optional.of(ResponseEntity.badRequest().body(responseMap));
+        }
+        return Optional.empty();
+    }
+
+    private ResponseEntity<Map<String, Object>> unknownErrorResponse(Exception e) {
+        String message = "Unexpected error occurred: " + e.getMessage() + "\n" + e;
+        logger.error(message);
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("message", message);
+        return ResponseEntity.badRequest().body(responseMap);
     }
 }
