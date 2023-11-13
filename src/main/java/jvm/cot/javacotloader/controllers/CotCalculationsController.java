@@ -1,9 +1,6 @@
 package jvm.cot.javacotloader.controllers;
 
-import jvm.cot.javacotloader.models.Cot;
-import jvm.cot.javacotloader.models.InsertSmaRequest;
-import jvm.cot.javacotloader.models.SmaRequestBody;
-import jvm.cot.javacotloader.services.CotCalculationsService;
+import jvm.cot.javacotloader.models.*;
 import jvm.cot.javacotloader.services.CotPagingSortingService;
 import jvm.cot.javacotloader.services.SmaService;
 import org.slf4j.Logger;
@@ -21,17 +18,14 @@ import java.util.Map;
 public class CotCalculationsController {
     private static final Logger logger = LoggerFactory.getLogger(CotCalculationsController.class);
     private final CotPagingSortingService pagingSortingService;
-    private final CotCalculationsService cotCalculationsService;
     private final SmaService smaService;
 
     @Autowired
     public CotCalculationsController(
             CotPagingSortingService pagingSortingService,
-            CotCalculationsService cotCalculationsService,
             SmaService smaService
     ) {
         this.pagingSortingService = pagingSortingService;
-        this.cotCalculationsService = cotCalculationsService;
         this.smaService = smaService;
     }
 
@@ -43,9 +37,10 @@ public class CotCalculationsController {
     ) {
         try {
             Page<Cot> cotPage = pagingSortingService.getByPageSorted(page, size, sort);
-            Map<String, Object> responseMap = cotCalculationsService.pageToCalculationResponse(cotPage, true);
-            logger.info("Retrieved " + responseMap.size() + " records");
-            return ResponseEntity.ok(responseMap);
+            CotBuilder cotBuilder = new CotBuilder(cotPage).withNetValues(true);
+            CotPaginatedResponse cotResponse = cotBuilder.build();
+            logger.info("Retrieved " + cotResponse.getCots().size() + " records");
+            return ResponseEntity.ok(cotResponse.toMap());
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             String msg = "Error occurred: " + e.getMessage() + "\n" + e;
