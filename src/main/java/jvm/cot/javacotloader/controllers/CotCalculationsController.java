@@ -100,4 +100,29 @@ public class CotCalculationsController {
             return ResponseEntity.badRequest().body(responseMap);
         }
     }
+
+    @PostMapping(value = "/sma-all", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<Map<String, Object>> getCotsWithAllSmas(
+            @RequestBody SmaAllRequestBody smaRequest
+    ) {
+        String market = smaRequest.getMarket();
+        String sort = smaRequest.getSort();
+        Integer page = smaRequest.getPage();
+        Integer size = smaRequest.getSize();
+        if (market == null || market.isBlank()) {
+            logger.error("Invalid request: " + smaRequest);
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("message", "Invalid request: " + smaRequest);
+            return ResponseEntity.badRequest().body(responseMap);
+        }
+        try {
+            CotPaginatedResponse cotResponse = smaService.getCotResponseWithAllSmas(market, page, size, sort);
+            return ResponseEntity.ok(cotResponse.toMap());
+        } catch (Exception e) {
+            logger.error("Error occurred: " + e.getMessage() + "\n" + e);
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("message", "Error occurred: " + e.getMessage() + "\n" + e);
+            return ResponseEntity.badRequest().body(responseMap);
+        }
+    }
 }

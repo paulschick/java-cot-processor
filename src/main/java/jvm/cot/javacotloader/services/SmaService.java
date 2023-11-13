@@ -27,6 +27,21 @@ public class SmaService {
         this.cotPagingSortingService = cotPagingSortingService;
     }
 
+    public CotPaginatedResponse getCotResponseWithAllSmas(String market, int page, int size, String sort) {
+        String baseSmaKey = "sma";
+        Pageable pagingSort = cotPagingSortingService.getPageRequest(page, size, sort);
+        Page<Cot> cotPage = cotRepository.retrieveByMarketPageable(market, pagingSort);
+        CotBuilder cotBuilder = new CotBuilder(cotPage).withNetValues(true);
+        CotPaginatedResponse cotResponse = cotBuilder.build();
+        for (CotResponse cot : cotResponse.getCots()) {
+            smaRepository.findByCotId(cot.getId())
+                    .forEach(sma -> {
+                        cot.getCalculatedFields().put(baseSmaKey + sma.getPeriod(), sma.getValue());
+                    });
+        }
+        return cotResponse;
+    }
+
     public CotPaginatedResponse getCotResponseWithSma(int period, String market, int page, int size, String sort) {
         String smaKey = "sma" + period;
         Pageable pagingSort = cotPagingSortingService.getPageRequest(page, size, sort);

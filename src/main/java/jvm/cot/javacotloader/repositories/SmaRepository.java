@@ -12,5 +12,5 @@ public interface SmaRepository extends JpaRepository<SimpleMovingAverage, Long> 
     SimpleMovingAverage findByCotIdAndPeriod(@Param("cotId") Long cotId, @Param("period") int period);
 
     @Query("SELECT s FROM SimpleMovingAverage s WHERE s.cotId = :cotId")
-    SimpleMovingAverage findByCotId(@Param("cotId") Long cotId);
+    Collection<SimpleMovingAverage> findByCotId(@Param("cotId") Long cotId);
 }
