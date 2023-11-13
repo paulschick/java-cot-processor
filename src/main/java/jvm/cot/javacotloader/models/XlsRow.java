@@ -1,5 +1,6 @@
 package jvm.cot.javacotloader.models;
 
+import jvm.cot.javacotloader.models.entities.Cot;
 import lombok.Getter;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;

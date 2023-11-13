@@ -1,6 +1,6 @@
 package jvm.cot.javacotloader.services;
 
-import jvm.cot.javacotloader.models.Cot;
+import jvm.cot.javacotloader.models.entities.Cot;
 import jvm.cot.javacotloader.models.XlsRow;
 import jvm.cot.javacotloader.repositories.CotRepository;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;

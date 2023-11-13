@@ -1,6 +1,6 @@
 package jvm.cot.javacotloader.controllers;
 
-import jvm.cot.javacotloader.models.Cot;
+import jvm.cot.javacotloader.models.entities.Cot;
 import jvm.cot.javacotloader.services.CotPagingSortingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

@@ -1,6 +1,7 @@
 package jvm.cot.javacotloader.models;
 
 import jvm.cot.javacotloader.mappers.CotResponseMapper;
+import jvm.cot.javacotloader.models.entities.Cot;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
 

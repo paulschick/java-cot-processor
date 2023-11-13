@@ -1,4 +1,4 @@
-package jvm.cot.javacotloader.models;
+package jvm.cot.javacotloader.models.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;

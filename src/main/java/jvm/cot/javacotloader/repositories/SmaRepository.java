@@ -1,6 +1,6 @@
 package jvm.cot.javacotloader.repositories;
 
-import jvm.cot.javacotloader.models.SimpleMovingAverage;
+import jvm.cot.javacotloader.models.entities.SimpleMovingAverage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

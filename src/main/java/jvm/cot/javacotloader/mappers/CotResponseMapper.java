@@ -1,6 +1,6 @@
 package jvm.cot.javacotloader.mappers;
 
-import jvm.cot.javacotloader.models.Cot;
+import jvm.cot.javacotloader.models.entities.Cot;
 import jvm.cot.javacotloader.models.CotResponse;
 
 import java.util.HashMap;
