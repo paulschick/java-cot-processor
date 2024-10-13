@@ -1,5 +1,6 @@
 package jvm.cot.javacotloader.config;
 
+import java.util.Objects;
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,8 @@ public class DbConfig {
     @Bean
     public DataSource dataSource() {
         final DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(env.getProperty("driverClassName"));
-        dataSource.setUrl(env.getProperty("url"));
-        dataSource.setUsername(env.getProperty("user"));
-        dataSource.setPassword(env.getProperty("password"));
+        dataSource.setDriverClassName(Objects.requireNonNull(env.getProperty("driverClassName")));
+        dataSource.setUrl(Objects.requireNonNull(env.getProperty("url")));
         return dataSource;
     }
 
@@ -40,7 +39,7 @@ public class DbConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         final LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource());
-        em.setPackagesToScan(new String[] { "jvm.cot.javacotloader.models" });
+        em.setPackagesToScan("jvm.cot.javacotloader.models");
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         em.setJpaProperties(additionalProperties());
         return em;

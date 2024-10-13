@@ -19,7 +19,7 @@ paging and sorting capabilities.
 
 - JDK 21
 - Maven 3.6.0 or later
-- SQLit
+- SQLite
 
 ### Installation
 

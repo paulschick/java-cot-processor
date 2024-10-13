@@ -10,7 +10,7 @@
     </parent>
     <groupId>jvm.cot</groupId>
     <artifactId>java-cot-loader</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1</version>
     <name>java-cot-loader</name>
     <description>java-cot-loader</description>
     <properties>

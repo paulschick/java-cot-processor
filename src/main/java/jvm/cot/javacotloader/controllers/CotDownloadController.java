@@ -15,12 +15,13 @@ import java.util.Map;
 /**
  * <a href="https://github.com/christine-berlin/COT-Charts/blob/master/src/UpdateExcelFiles.java">UpdateExcelFiles.java</a>
  */
-@RestController
+@Deprecated
+//@RestController
 public class CotDownloadController {
     private static final Logger logger = LoggerFactory.getLogger(CotDownloadController.class);
     private final DownloadService downloadService;
 
-    @Autowired
+//    @Autowired
     public CotDownloadController(DownloadService downloadService) {
         this.downloadService = downloadService;
     }
