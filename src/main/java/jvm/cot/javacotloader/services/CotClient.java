@@ -8,19 +8,26 @@ import jvm.cot.javacotloader.repositories.CotJpaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.FileOutputStream;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CotClient {
     private static final Logger logger = LoggerFactory.getLogger(CotClient.class);
     private static final String BASE_URL = "https://publicreporting.cftc.gov/resource/6dca-aqww.json";
+    private static final String DOWNLOAD_BULK_URL = "https://publicreporting.cftc.gov/api/views/6dca-aqww/rows.csv?accessType=DOWNLOAD&api_foundry=true";
     public static final String DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss";
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_FMT);
 
@@ -47,8 +54,38 @@ public class CotClient {
     }
 
     public List<CftcResponse> getAllCots() {
-        var uri = URI.create(BASE_URL);
-        return get(uri);
+        var path = Paths.get("/home/paul/github.com/paulschick/java-cot-processor/output2.csv")
+                .toAbsolutePath()
+                .normalize();
+
+        var resp = restClient.get()
+                .uri(URI.create(DOWNLOAD_BULK_URL))
+                .headers(headers -> {
+                    headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+                    headers.set("X-App-Token", apiKey);
+                })
+                .retrieve()
+                .body(Resource.class);
+
+        if (resp == null) {
+            logger.error("null response from {}", DOWNLOAD_BULK_URL);
+            return new ArrayList<>();
+        }
+
+        try (var inputStream = resp.getInputStream();
+        var outputStream = new FileOutputStream(path.toString())) {
+            var buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            logger.debug("successfully downloaded file from {} to {}", DOWNLOAD_BULK_URL, path);
+
+        } catch (Exception e) {
+            logger.error("exception writing resource to file", e);
+        }
+
+        return new ArrayList<>();
     }
 
     public URI buildUriAfterDate(int year, int month, int day) {
