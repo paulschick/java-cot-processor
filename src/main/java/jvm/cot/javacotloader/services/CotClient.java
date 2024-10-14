@@ -2,7 +2,9 @@ package jvm.cot.javacotloader.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jvm.cot.javacotloader.models.CotEntityMapProvider;
 import jvm.cot.javacotloader.models.response.CftcResponse;
+import jvm.cot.javacotloader.repositories.CotJpaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,11 +27,19 @@ public class CotClient {
     private final String apiKey;
     private final RestClient restClient;
     private final ObjectMapper mapper;
+    private final CotJpaRepository cotJpaRepository;
+    private final CotEntityMapProvider cotEntityMapProvider;
 
-    public CotClient(@Value("${cftc.appToken}") String apiKey, RestClient restClient, ObjectMapper mapper) {
+    public CotClient(@Value("${cftc.appToken}") String apiKey,
+                     RestClient restClient,
+                     ObjectMapper mapper,
+                     CotJpaRepository cotJpaRepository,
+                     CotEntityMapProvider cotEntityMapProvider) {
         this.apiKey = apiKey;
         this.restClient = restClient;
         this.mapper = mapper;
+        this.cotJpaRepository = cotJpaRepository;
+        this.cotEntityMapProvider = cotEntityMapProvider;
     }
 
     public List<CftcResponse> getCotsAfterDate(int year, int month, int day) throws IllegalArgumentException {
@@ -53,6 +63,23 @@ public class CotClient {
 
     public String getURLAfterDate(int year, int month, int day) {
         return buildUriAfterDate(year, month, day).toString();
+    }
+
+    public int insertCftcResponse(List<CftcResponse> cftcResponses) {
+        try {
+            var cots = cftcResponses.stream()
+                    .map(cotEntityMapProvider::map)
+                    .filter(cot -> !cotJpaRepository.existsByMarketDate(cot.getMarketDate()))
+                    .toList();
+
+            cotJpaRepository.saveAll(cots);
+
+            return cots.size();
+        } catch (Exception e) {
+            logger.error("error parsing CFTC response", e);
+            logger.error("unable to save response to database");
+            return 0;
+        }
     }
 
     private List<CftcResponse> get(URI uri) throws RuntimeException {

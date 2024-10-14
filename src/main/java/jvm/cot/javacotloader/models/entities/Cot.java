@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
-
 @Entity
 @Getter
 @Setter
@@ -16,9 +14,11 @@ public class Cot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "date")
-    private Date date;
+    private String date;
     @Column(name = "market")
     private String market;
+    @Column(name = "market_date")
+    private String marketDate;
     @Column(name = "contract_name")
     private String contractName;
     @Column(name = "commodity_name")

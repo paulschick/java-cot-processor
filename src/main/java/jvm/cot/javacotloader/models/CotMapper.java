@@ -15,8 +15,7 @@ public class CotMapper {
         return (Cot cot) -> {
             var cotResponse = new CotResponse();
             cotResponse.setId(cot.getId());
-            var date = DATE_FORMAT.format(cot.getDate());
-            cotResponse.setDate(date);
+            cotResponse.setDate(cot.getDate());
             cotResponse.setMarket(cot.getMarket());
             cotResponse.setContractName(cot.getContractName());
             cotResponse.setCommodityName(cot.getCommodityName());
@@ -38,26 +37,32 @@ public class CotMapper {
 
     public static CotEntityMapProvider getEntityMapper() {
         return (CftcResponse cftcResponse) -> {
-            var cot = new Cot();
-            var date = API_DATE_FORMAT.parse(cftcResponse.getReportDate());
-            cot.setDate(date);
-            cot.setMarket(cftcResponse.getMarket());
-            cot.setContractName(cftcResponse.getContractName());
-            cot.setCommodityName(cftcResponse.getCommodityName());
-            cot.setCommoditySubgroup(cftcResponse.getCommoditySubgroup());
-            cot.setCommodityGroup(cftcResponse.getCommodityGroup());
-            cot.setOpenInterest(cftcResponse.getOpenInterest());
-            cot.setNonCommLong(cftcResponse.getNonCommLong());
-            cot.setNonCommShort(cftcResponse.getNonCommShort());
-            cot.setNonCommNet(getNetString(cot.getNonCommLong(), cot.getNonCommShort()));
-            cot.setCommLong(cftcResponse.getCommLong());
-            cot.setCommShort(cftcResponse.getCommShort());
-            cot.setCommNet(getNetString(cot.getCommLong(), cot.getCommShort()));
-            cot.setNonReptLong(cftcResponse.getNonReptLong());
-            cot.setNonReptShort(cftcResponse.getNonReptShort());
-            cot.setNonReptNet(getNetString(cot.getNonReptLong(), cot.getNonReptShort()));
+            try {
+                var cot = new Cot();
+                var date = API_DATE_FORMAT.parse(cftcResponse.getReportDate());
+                var dateFmt = DATE_FORMAT.format(date);
+                cot.setDate(dateFmt);
+                cot.setMarket(cftcResponse.getMarket());
+                cot.setMarketDate(cot.getMarket() + " " + dateFmt);
+                cot.setContractName(cftcResponse.getContractName());
+                cot.setCommodityName(cftcResponse.getCommodityName());
+                cot.setCommoditySubgroup(cftcResponse.getCommoditySubgroup());
+                cot.setCommodityGroup(cftcResponse.getCommodityGroup());
+                cot.setOpenInterest(cftcResponse.getOpenInterest());
+                cot.setNonCommLong(cftcResponse.getNonCommLong());
+                cot.setNonCommShort(cftcResponse.getNonCommShort());
+                cot.setNonCommNet(getNetString(cot.getNonCommLong(), cot.getNonCommShort()));
+                cot.setCommLong(cftcResponse.getCommLong());
+                cot.setCommShort(cftcResponse.getCommShort());
+                cot.setCommNet(getNetString(cot.getCommLong(), cot.getCommShort()));
+                cot.setNonReptLong(cftcResponse.getNonReptLong());
+                cot.setNonReptShort(cftcResponse.getNonReptShort());
+                cot.setNonReptNet(getNetString(cot.getNonReptLong(), cot.getNonReptShort()));
 
-            return cot;
+                return cot;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         };
     }
 

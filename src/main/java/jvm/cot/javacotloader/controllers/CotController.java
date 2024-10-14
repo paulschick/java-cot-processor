@@ -2,6 +2,7 @@ package jvm.cot.javacotloader.controllers;
 
 import jvm.cot.javacotloader.models.CotResponseMapProvider;
 import jvm.cot.javacotloader.models.response.CotResponse;
+import jvm.cot.javacotloader.models.response.MessageResponse;
 import jvm.cot.javacotloader.models.response.TestCotResponse;
 import jvm.cot.javacotloader.repositories.CotRepository;
 import jvm.cot.javacotloader.services.CotClient;
@@ -52,6 +53,19 @@ public class CotController {
         } catch (Exception e) {
             logger.error("exception retrieving COTs", e);
             return ResponseEntity.internalServerError().body(new TestCotResponse(e.getMessage()));
+        }
+    }
+
+    @GetMapping(value = "download/insert/test", produces = "application/json")
+    public ResponseEntity<MessageResponse> insertCotsTest() {
+        try {
+            var cftc = cotClient.getCotsAfterDate(2024, 10, 4);
+            var inserted = cotClient.insertCftcResponse(cftc);
+            var msg = new MessageResponse(null, String.format("Successfully inserted %s items", inserted));
+            return ResponseEntity.ok(msg);
+        } catch (Exception e) {
+            logger.error("error inserting COTs", e);
+            return ResponseEntity.internalServerError().body(new MessageResponse("error inserting COTs", e.getMessage()));
         }
     }
 
