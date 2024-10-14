@@ -19,6 +19,14 @@ public class Cot {
     private Date date;
     @Column(name = "market")
     private String market;
+    @Column(name = "contract_name")
+    private String contractName;
+    @Column(name = "commodity_name")
+    private String commodityName;
+    @Column(name = "commodity_subgroup")
+    private String commoditySubgroup;
+    @Column(name = "commodity_group")
+    private String commodityGroup;
     @Column(name = "open_interest")
     private String openInterest;
     @Column(name = "non_commercial_long")

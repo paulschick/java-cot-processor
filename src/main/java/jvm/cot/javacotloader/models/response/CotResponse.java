@@ -4,15 +4,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
-
 @Getter
 @Setter
 @NoArgsConstructor
 public class CotResponse {
     private Long id;
-    private Date date;
+    private String date;
     private String market;
+    private String contractName;
+    private String commodityName;
+    private String commoditySubgroup;
+    private String commodityGroup;
     private int openInterest;
     private int nonCommLong;
     private int nonCommShort;
