@@ -1,6 +1,6 @@
 package jvm.cot.javacotloader.controllers;
 
-import jvm.cot.javacotloader.models.CotResponseMapProvider;
+import jvm.cot.javacotloader.models.map.CotResponseMapProvider;
 import jvm.cot.javacotloader.models.response.CotResponse;
 import jvm.cot.javacotloader.models.response.MessageResponse;
 import jvm.cot.javacotloader.models.response.TestCotResponse;

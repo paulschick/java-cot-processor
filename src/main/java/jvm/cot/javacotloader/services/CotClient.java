@@ -2,7 +2,7 @@ package jvm.cot.javacotloader.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jvm.cot.javacotloader.models.CotEntityMapProvider;
+import jvm.cot.javacotloader.models.map.CotEntityMapProvider;
 import jvm.cot.javacotloader.models.response.CftcResponse;
 import jvm.cot.javacotloader.repositories.CotJpaRepository;
 import org.slf4j.Logger;

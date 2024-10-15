@@ -1,6 +1,10 @@
 package jvm.cot.javacotloader.models.entities;
 
 import jakarta.persistence.*;
+import jvm.cot.javacotloader.models.map.CotMapper;
+import jvm.cot.javacotloader.models.map.NumericCotDataSource;
+import jvm.cot.javacotloader.models.response.CotResponse;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,7 +13,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Cot {
+@AllArgsConstructor
+public class Cot implements NumericCotDataSource {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -47,4 +52,17 @@ public class Cot {
     private String nonReptShort;
     @Column(name = "non_rept_net")
     private String nonReptNet;
+
+    public CotResponse mapToCotResponse() {
+        var cotResponse = new CotResponse();
+        cotResponse.setId(getId());
+        cotResponse.setDate(getDate());
+        cotResponse.setMarket(getMarket());
+        cotResponse.setContractName(getContractName());
+        cotResponse.setCommodityName(getCommodityName());
+        cotResponse.setCommoditySubgroup(getCommoditySubgroup());
+        cotResponse.setCommodityGroup(getCommodityGroup());
+        CotMapper.mapNumericFields(cotResponse, this);
+        return cotResponse;
+    }
 }

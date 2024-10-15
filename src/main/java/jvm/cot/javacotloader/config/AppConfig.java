@@ -1,9 +1,9 @@
 package jvm.cot.javacotloader.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jvm.cot.javacotloader.models.CotEntityMapProvider;
-import jvm.cot.javacotloader.models.CotMapper;
-import jvm.cot.javacotloader.models.CotResponseMapProvider;
+import jvm.cot.javacotloader.models.map.CotEntityMapProvider;
+import jvm.cot.javacotloader.models.map.CotMapper;
+import jvm.cot.javacotloader.models.map.CotResponseMapProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
