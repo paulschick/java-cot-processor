@@ -17,11 +17,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.FileOutputStream;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class CotClient {
@@ -73,7 +77,7 @@ public class CotClient {
         }
 
         try (var inputStream = resp.getInputStream();
-        var outputStream = new FileOutputStream(path.toString())) {
+             var outputStream = new FileOutputStream(path.toString())) {
             var buffer = new byte[8192];
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) != -1) {
@@ -92,10 +96,11 @@ public class CotClient {
         var date = LocalDateTime.of(year, month, day, 0, 0);
         var fmtDate = date.format(FORMATTER);
         var whereClause = String.format("report_date_as_yyyy_mm_dd > '%s'", fmtDate);
-        return UriComponentsBuilder.fromHttpUrl(BASE_URL)
-                .queryParam("$where", whereClause)
-                .build()
-                .toUri();
+        String query = ClientHelper.buildQuery(
+                "$where", whereClause
+        );
+        String url = BASE_URL + "?" + query;
+        return URI.create(url);
     }
 
     public String getURLAfterDate(int year, int month, int day) {
